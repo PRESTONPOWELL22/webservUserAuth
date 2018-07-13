@@ -8,12 +8,14 @@ var User = require('./models/user')
 var path = require('path')
 var mongoose = require('mongoose')
 
+// Middlewere_++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 app.use(express.static('public'))
 app.use(session({ secret: 'cats' }))
 app.use(bodyParser.urlencoded({ extended: false }))
 app.use(passport.initialize())
 app.use(passport.session())
 
+// db connection_+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 mongoose.connect('mongodb://localhost/webservSMS')
 var db = mongoose.connection
 db.on('error', console.error.bind(console, 'connection error'))
@@ -21,7 +23,7 @@ db.once('open', function (callback) {
   console.log('Connection succeeded.')
 })
 
-// strategy
+// strategy_++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 passport.use(new LocalStrategy(
   function (username, password, done) { // needs a DB
     User.findOne({ username: username }, function (err, user) {
@@ -37,6 +39,7 @@ passport.use(new LocalStrategy(
   }
 ))
 
+// Serialize and Deserialize User_++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 passport.serializeUser(function (user, done) {
   done(null, user.id)
 })
@@ -47,13 +50,18 @@ passport.deserializeUser(function (id, done) {
   })
 })
 
-
+// routes++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 app.post('/login', (req, res) => {
+  passport.authenticate('local', { successRedirect: '/',
+    failureRedirect: '/login',
+    failureFlash: true })
+})
+
+app.post('/register', (req, res) => {
   var user = new User({
     username: req.body.username,
     password: req.body.password
   })
-  console.log(user)
   User.create(user)
 })
 
